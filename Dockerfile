@@ -2,6 +2,8 @@ FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
+ENV URL='https://osdn.net/frs/chamber_redir.php?m=nchc&f=%2Fusers%2F38%2F38801%2Fmozcdic-ut-20220723.tar.bz2'
+
 # Package installation
 RUN apt-get update
 ## Common packages for linux build environment
@@ -32,8 +34,11 @@ WORKDIR /home/mozc_builder/work
 RUN apt-get source ibus-mozc
 RUN mv mozc-* mozc
 
-COPY ./mozcdic-ut-20220623.txt ./mozcdic-ut.txt
-RUN cat ./mozcdic-ut.txt >> mozc/src/data/dictionary_oss/dictionary00.txt
+RUN curl -fsSL $URL > mozcdic-ut.tar.bz2
+RUN tar -xf mozcdic-ut.tar.bz2
+RUN mv mozcdic-ut-2022* mozcdic-ut
+RUN mv mozcdic-ut/mozcdic-ut-2022*.txt mozcdic-ut/mozcdic-ut.txt
+RUN cat ./mozcdic-ut/mozcdic-ut.txt >> mozc/src/data/dictionary_oss/dictionary00.txt
 
 WORKDIR /home/mozc_builder/work/mozc
 
@@ -42,6 +47,3 @@ RUN dpkg-buildpackage -us -uc
 WORKDIR /home/mozc_builder/work
 RUN mkdir -p deb
 RUN cp *.deb ./deb/
-# RUN bazel build package --config oss_linux -c opt
-# WORKDIR /home/mozc_builder/work/mozc
-# RUN debuild -b -uc -us -d
